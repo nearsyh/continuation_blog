@@ -12,6 +12,11 @@ namespace scheduler {
 
 class SequentialScheduler;
 
+enum TaskStatus {
+  CREATED = 0,
+  RUN
+};
+
 class SequentialTaskHolder : public TaskHolder {
  private:
   jmp_buf _jmp_target;
@@ -19,6 +24,7 @@ class SequentialTaskHolder : public TaskHolder {
   void* _stack_bottom;
   void* _stack_top;
   int _stack_size;
+  TaskStatus _status;
 
  public:
   SequentialTaskHolder(void (*task)(Scheduler* scheduler)) : TaskHolder(task) {
@@ -29,7 +35,9 @@ class SequentialTaskHolder : public TaskHolder {
 
   virtual ~SequentialTaskHolder() { free(_stack_bottom); }
 
-  virtual void run(Scheduler* scheduler);
+  virtual void run(Scheduler* scheduler) {
+    TaskHolder::run(scheduler);
+  }
 };
 
 enum SchedulerStatus { INIT = 0, SCHEDULE, EXIT };
@@ -52,10 +60,6 @@ class SequentialScheduler : public Scheduler {
   virtual void run();
 
  protected:
-  virtual TaskHolder* get_current_task();
-
-  virtual void set_current_task(TaskHolder* task_holder);
-
   virtual void exit_current_task();
 
  private:

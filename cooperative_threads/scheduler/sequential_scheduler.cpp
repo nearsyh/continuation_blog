@@ -3,11 +3,6 @@
 namespace nearsyh {
 namespace scheduler {
 
-template <typename TO, typename FROM>
-std::unique_ptr<TO> static_unique_pointer_cast(std::unique_ptr<FROM>&& old) {
-  return std::unique_ptr<TO>{static_cast<TO*>(old.release())};
-}
-
 SequentialScheduler::SequentialScheduler() {
   _task_queue = std::queue<SequentialTaskHolder*>{};
 }
@@ -42,13 +37,21 @@ void SequentialScheduler::schedule() {
     return;
   }
 
-  // Load Stack
-  auto* top = next_task_opt.value()->_stack_top;
-  asm volatile("mov %[rs], %%rsp \n" : [ rs ] "+r"(top)::);
+  auto* next_task = next_task_opt.value();
 
-  set_current_task(next_task_opt.value());
-  get_current_task()->run(this);
-  this->exit_current_task();
+  if (next_task->_status == TaskStatus::CREATED) {
+    next_task->_status = TaskStatus::RUN;
+    // Load Stack
+    auto* top = next_task->_stack_top;
+    asm volatile("mov %[rs], %%rsp \n" : [ rs ] "+r"(top)::);
+
+    set_current_task(next_task);
+    get_current_task()->run(this);
+    this->exit_current_task();
+  } else {
+    longjmp(next_task->_jmp_target, 1);
+  }
+
 }
 
 void SequentialScheduler::exit_current_task() {

@@ -18,7 +18,7 @@ class TaskHolder {
 
         };
 
-  virtual ~TaskHolder();
+  virtual ~TaskHolder() {}
 
   virtual void run(Scheduler* scheduler) { _task(scheduler); }
 };
@@ -29,20 +29,22 @@ class Scheduler {
   friend class TaskHolder;
 
  protected:
-  virtual TaskHolder* get_current_task();
+  virtual TaskHolder* get_current_task() { return _current_task; }
 
-  virtual void set_current_task(TaskHolder* task_holder);
+  virtual void set_current_task(TaskHolder* task_holder) {
+    _current_task = task_holder;
+  }
 
-  virtual void exit_current_task();
+  virtual void exit_current_task() = 0;
 
  public:
-  virtual ~Scheduler();
+  virtual ~Scheduler() {}
 
-  virtual void add_task(void (*task)(Scheduler* scheduler));
+  virtual void add_task(void (*task)(Scheduler* scheduler)) = 0;
 
-  virtual void yield();
+  virtual void yield() = 0;
 
-  virtual void run();
+  virtual void run() = 0;
 };
 }  // namespace scheduler
 }  // namespace nearsyh
