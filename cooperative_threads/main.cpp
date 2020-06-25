@@ -14,7 +14,7 @@ int main() {
     }
   });
   scheduler.add_task([](scheduler::Scheduler *scheduler) {
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
       std::cout << "Task 2: " << i << std::endl;
       scheduler->yield();
     }

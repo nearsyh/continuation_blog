@@ -1,4 +1,5 @@
 #include "sequential_scheduler.h"
+#include <iostream>
 
 namespace nearsyh {
 namespace scheduler {
@@ -38,6 +39,7 @@ void SequentialScheduler::schedule() {
   }
 
   auto* next_task = next_task_opt.value();
+  set_current_task(next_task);
 
   if (next_task->_status == TaskStatus::CREATED) {
     next_task->_status = TaskStatus::RUN;
@@ -45,7 +47,6 @@ void SequentialScheduler::schedule() {
     auto* top = next_task->_stack_top;
     asm volatile("mov %[rs], %%rsp \n" : [ rs ] "+r"(top)::);
 
-    set_current_task(next_task);
     get_current_task()->run(this);
     this->exit_current_task();
   } else {
