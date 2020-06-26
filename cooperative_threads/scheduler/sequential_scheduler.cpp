@@ -1,5 +1,4 @@
 #include "sequential_scheduler.h"
-#include <iostream>
 
 namespace nearsyh {
 namespace scheduler {

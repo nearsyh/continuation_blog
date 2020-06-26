@@ -1,6 +1,6 @@
 all: main.cpp scheduler/*
 	make clean
-	g++ --std=c++17 main.cpp scheduler/* -o main
+	g++ --std=c++17 -pthread main.cpp scheduler/* -o main
 
 clean:
 	rm -f main

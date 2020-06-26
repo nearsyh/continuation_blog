@@ -6,6 +6,13 @@
 namespace nearsyh {
 namespace scheduler {
 
+enum TaskStatus {
+  CREATED = 0,
+  RUN
+};
+
+enum SchedulerStatus { INIT = 0, SCHEDULE, EXIT };
+
 class Scheduler;
 
 class TaskHolder {
@@ -26,13 +33,6 @@ class TaskHolder {
 class Scheduler {
  private:
   friend class TaskHolder;
-
- protected:
-  virtual TaskHolder* get_current_task() = 0;
-
-  virtual void set_current_task(TaskHolder* task_holder) = 0;
-
-  virtual void exit_current_task() = 0;
 
  public:
   virtual ~Scheduler() {}
