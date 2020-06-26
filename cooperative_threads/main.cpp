@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     }
   });
   scheduler->run();
-  delete scheduler;
   std::cout << "Finish" << std::endl;
+  delete scheduler;
   return 0;
 }

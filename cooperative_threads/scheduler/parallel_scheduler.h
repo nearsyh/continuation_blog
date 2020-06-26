@@ -42,7 +42,7 @@ class ParallelScheduler : public Scheduler {
   mutable std::mutex _mutex;
   std::vector<ParallelTaskHolder*> _current_tasks;
   std::queue<ParallelTaskHolder*> _task_queue;
-  jmp_buf _buf;
+  jmp_buf* _bufs;
   SchedulerStatus _status;
 
  public:
