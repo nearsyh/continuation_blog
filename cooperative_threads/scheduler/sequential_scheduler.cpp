@@ -55,6 +55,14 @@ void SequentialScheduler::schedule() {
 
 }
 
+TaskHolder* SequentialScheduler::get_current_task() {
+  return _current_task;
+}
+
+void SequentialScheduler::set_current_task(TaskHolder* task_holder) {
+  _current_task = static_cast<SequentialTaskHolder*>(task_holder);
+}
+
 void SequentialScheduler::exit_current_task() {
   delete get_current_task();
   set_current_task(nullptr);
@@ -77,6 +85,7 @@ void SequentialScheduler::run() {
     case SchedulerStatus::INIT:
     case SchedulerStatus::SCHEDULE:
       schedule();
+      close();
       return;
     default:
       break;

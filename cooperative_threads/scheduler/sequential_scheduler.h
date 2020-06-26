@@ -45,6 +45,7 @@ enum SchedulerStatus { INIT = 0, SCHEDULE, EXIT };
 class SequentialScheduler : public Scheduler {
  private:
   std::queue<SequentialTaskHolder*> _task_queue;
+  SequentialTaskHolder* _current_task;
   jmp_buf _buf;
   SchedulerStatus _status;
 
@@ -60,6 +61,10 @@ class SequentialScheduler : public Scheduler {
   virtual void run();
 
  protected:
+  virtual TaskHolder* get_current_task();
+
+  virtual void set_current_task(TaskHolder* task_holder);
+
   virtual void exit_current_task();
 
  private:

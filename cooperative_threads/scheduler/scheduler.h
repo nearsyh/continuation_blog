@@ -25,15 +25,12 @@ class TaskHolder {
 
 class Scheduler {
  private:
-  TaskHolder* _current_task;
   friend class TaskHolder;
 
  protected:
-  virtual TaskHolder* get_current_task() { return _current_task; }
+  virtual TaskHolder* get_current_task() = 0;
 
-  virtual void set_current_task(TaskHolder* task_holder) {
-    _current_task = task_holder;
-  }
+  virtual void set_current_task(TaskHolder* task_holder) = 0;
 
   virtual void exit_current_task() = 0;
 
