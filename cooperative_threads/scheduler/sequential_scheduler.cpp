@@ -63,7 +63,7 @@ void SequentialScheduler::set_current_task(TaskHolder* task_holder) {
 }
 
 void SequentialScheduler::exit_current_task() {
-  delete get_current_task();
+  delete static_cast<SequentialTaskHolder*>(get_current_task());
   set_current_task(nullptr);
   longjmp(_buf, SchedulerStatus::EXIT);
 }

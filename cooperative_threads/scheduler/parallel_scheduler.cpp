@@ -13,16 +13,13 @@ ParallelScheduler::ParallelScheduler() {
   _task_queue = std::queue<ParallelTaskHolder*>{};
   _current_tasks = std::vector<ParallelTaskHolder*>();
   int concurrency = std::thread::hardware_concurrency();
-  concurrency = 2;
   _bufs = new jmp_buf[concurrency];
   for (int i = 0; i < concurrency; i++) {
     _current_tasks.push_back(nullptr);
   }
 }
 
-ParallelScheduler::~ParallelScheduler() {
-  delete _bufs;
-}
+ParallelScheduler::~ParallelScheduler() { delete _bufs; }
 
 bool ParallelScheduler::is_closed() { return _status == SchedulerStatus::EXIT; }
 
@@ -92,7 +89,7 @@ void ParallelScheduler::set_current_task(TaskHolder* task_holder) {
 }
 
 void ParallelScheduler::exit_current_task() {
-  delete get_current_task();
+  delete static_cast<ParallelTaskHolder*>(get_current_task());
   set_current_task(nullptr);
   longjmp(thread_local_buf, SchedulerStatus::EXIT);
 }
@@ -100,7 +97,8 @@ void ParallelScheduler::exit_current_task() {
 void ParallelScheduler::yield() {
   {
     std::lock_guard<std::mutex> guard(_mutex);
-    std::cout << "Thread " << thread_id << " yield from task " << get_current_task() << std::endl; 
+    std::cout << "Thread " << thread_id << " yield from task "
+              << get_current_task() << std::endl;
   }
   auto* task_holder = static_cast<ParallelTaskHolder*>(get_current_task());
   if (setjmp(task_holder->_jmp_target)) {
@@ -119,25 +117,39 @@ void ParallelScheduler::run() {
   for (int i = 0; i < _current_tasks.size(); i++) {
     threads.push_back(std::thread([&]() {
       thread_id = i;
+      setjmp(thread_local_buf);
       {
         std::lock_guard<std::mutex> guard(_mutex);
-        std::cout << "Jmp buf " << thread_local_buf << std::endl;
+        std::cout << "Thread " << thread_id << " Jmp buf " << thread_local_buf
+                  << std::endl;
       }
       switch (setjmp(thread_local_buf)) {
         case SchedulerStatus::EXIT:
         case SchedulerStatus::INIT:
         case SchedulerStatus::SCHEDULE:
           schedule();
-          return;
+          {
+            std::lock_guard<std::mutex> guard(_mutex);
+            std::cout << "Thread " << thread_id << " ends" << std::endl;
+          }
+          // return;
+          break;
         default:
           break;
       }
+      /*
+      {
+        std::lock_guard<std::mutex> guard(_mutex);
+        std::cout << "Thread " << thread_id << " out" << std::endl;
+      }
+      */
     }));
   }
   int c = 0;
   for (auto& thread : threads) {
+    // std::cout << "Joining " << c << std::endl;
     thread.join();
-    std::cout << "Join " << c << std::endl;
+    // std::cout << "Joined " << c << std::endl;
     c += 1;
   }
 }
